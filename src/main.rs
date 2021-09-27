@@ -1,3 +1,4 @@
+mod git;
 mod parser;
 
 use std::path::Path;
@@ -5,7 +6,7 @@ use std::path::Path;
 use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
 use once_cell::sync::Lazy;
 
-use crate::parser::{parse_json};
+use crate::parser::parse_json;
 
 fn create_app<'a, 'b>() -> App<'a, 'b> {
     let app = App::new(crate_name!())
@@ -22,7 +23,27 @@ fn create_app<'a, 'b>() -> App<'a, 'b> {
                     Err("Invalid version format".to_string())
                 }
             }
-        }));
+        }))
+        .arg(
+            Arg::with_name("git")
+                .short("g")
+                .long("git")
+                .help("git commit and add tag"),
+        )
+        .arg(
+            Arg::with_name("signature")
+                .short("S")
+                .help("signature for git commit")
+                .requires("git"),
+        )
+        .arg(
+            Arg::with_name("message")
+                .short("m")
+                .long("message")
+                .help("message for git commit")
+                .requires("git")
+                .takes_value(true),
+        );
     app
 }
 
@@ -92,4 +113,16 @@ fn main() {
 
     parsed_json.get_version_mut().bump(query);
     std::fs::write(manifest_path, parsed_json.emb_string()).unwrap();
+
+    if matches.is_present("git") {
+        let is_signature = matches.is_present("signature");
+        let message = matches.value_of("message").map(|x| x.to_string());
+        git::git_commit_and_tag(
+            parsed_json.get_version(),
+            is_signature,
+            message,
+            manifest_path.to_str().unwrap(),
+        )
+        .expect("Failed to commit and tag");
+    }
 }
