@@ -1,0 +1,19 @@
+{
+  "name": "traQ Spotify O2i",
+  "description": "Spotify OGP in traQ to iframe element",
+  "version": "0.1.0",
+  "manifest_version": 2,
+  "content_scripts": [
+    {
+      "matches": [
+        "https://q.trap.jp/*"
+      ],
+      "js": [
+        "content_script.js"
+      ],
+      "css": [
+        "content_style.css"
+      ]
+    }
+  ]
+}
