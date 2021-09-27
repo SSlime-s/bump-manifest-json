@@ -22,7 +22,8 @@ impl ParsedJson {
     }
 
     pub fn emb_string(&self) -> String {
-        self.template.replace(&self.key, &self.get_version().to_string())
+        self.template
+            .replace(&self.key, &self.get_version().to_string())
     }
 }
 
@@ -67,7 +68,8 @@ impl<'a> Parser<'a> {
                 '0'..='9' | 'a'..='z' | 'E' | '.' | '-' | '+' => self.num_like(),
                 ' ' => continue,
                 _ => panic!("unexpected char: {}", c),
-            }.as_str();
+            }
+            .as_str();
             break;
         }
         content
@@ -102,17 +104,17 @@ impl<'a> Parser<'a> {
                         self.json.next();
                         object.push(c);
                         break;
-                    },
+                    }
                     ',' => {
                         self.json.next();
                         object.push(c);
                         object += self.object_body().as_str();
-                    },
+                    }
                     x if is_whitespace(x) => {
                         self.json.next();
                         object.push(c);
                         continue;
-                    },
+                    }
                     _ => panic!("unexpected char: {}", c),
                 }
             } else {
@@ -187,16 +189,16 @@ impl<'a> Parser<'a> {
                         self.json.next();
                         array.push(']');
                         break;
-                    },
+                    }
                     ',' => {
                         self.json.next();
                         array.push(c);
-                    },
+                    }
                     x if is_whitespace(x) => {
                         self.json.next();
                         array.push(x);
                         continue;
-                    },
+                    }
                     _ => (),
                 }
             } else {
@@ -230,8 +232,8 @@ impl<'a> Parser<'a> {
                 '0'..='9' | 'a'..='z' | 'E' | '.' | '-' | '+' => {
                     self.json.next();
                     num_like.push(c);
-                    continue
-                },
+                    continue;
+                }
                 ']' | ',' | '}' => break,
                 x if is_whitespace(x) => break,
                 _ => panic!("unexpected char: {}", c),
@@ -367,10 +369,17 @@ mod tests {
 
     #[test]
     fn object_simple_with_many_space() {
-        let mut parser = Parser::new(r#"{
-    "a" : 1 }"#.chars());
-        assert_eq!(r#"{
-    "a" : 1 }"#.to_string(), parser.content());
+        let mut parser = Parser::new(
+            r#"{
+    "a" : 1 }"#
+                .chars(),
+        );
+        assert_eq!(
+            r#"{
+    "a" : 1 }"#
+                .to_string(),
+            parser.content()
+        );
     }
 
     #[test]
@@ -381,16 +390,23 @@ mod tests {
 
     #[test]
     fn object_nested_with_space() {
-        let mut parser = Parser::new(r#"{
+        let mut parser = Parser::new(
+            r#"{
     "a" : {
         "b" : 1
     }
-}"#.chars());
-        assert_eq!(r#"{
+}"#
+            .chars(),
+        );
+        assert_eq!(
+            r#"{
     "a" : {
         "b" : 1
     }
-}"#.to_string(), parser.content());
+}"#
+            .to_string(),
+            parser.content()
+        );
     }
 
     #[test]
@@ -402,8 +418,14 @@ mod tests {
     #[test]
     fn object_include_version() {
         let parsed_json = parse_json(r#"{"a":1,"version":"0.1.0"}"#).unwrap();
-        assert_eq!(parsed_json.version.unwrap().to_string(), "0.1.0".to_string());
-        assert_eq!(parsed_json.template, format!("{{\"a\":1,\"version\":\"{}\"}}", parsed_json.key));
+        assert_eq!(
+            parsed_json.version.unwrap().to_string(),
+            "0.1.0".to_string()
+        );
+        assert_eq!(
+            parsed_json.template,
+            format!("{{\"a\":1,\"version\":\"{}\"}}", parsed_json.key)
+        );
     }
 
     #[test]
@@ -416,28 +438,59 @@ mod tests {
     #[test]
     fn object_include_behind_version() {
         let parsed_json = parse_json(r#"{"a":{"b":["x",null,1]},"version":"0.1.0"}"#).unwrap();
-        assert_eq!(parsed_json.version.unwrap().to_string(), "0.1.0".to_string());
-        assert_eq!(parsed_json.template, format!("{{\"a\":{{\"b\":[\"x\",null,1]}},\"version\":\"{}\"}}", parsed_json.key));
+        assert_eq!(
+            parsed_json.version.unwrap().to_string(),
+            "0.1.0".to_string()
+        );
+        assert_eq!(
+            parsed_json.template,
+            format!(
+                "{{\"a\":{{\"b\":[\"x\",null,1]}},\"version\":\"{}\"}}",
+                parsed_json.key
+            )
+        );
     }
 
     #[test]
     fn object_include_version_with_space() {
         let parsed_json = parse_json(r#" {  "a" : 1  ,   "version"  :  "0.1.0"  }"#).unwrap();
-        assert_eq!(parsed_json.version.unwrap().to_string(), "0.1.0".to_string());
-        assert_eq!(parsed_json.template, format!(" {{  \"a\" : 1  ,   \"version\"  :  \"{}\"  }}", parsed_json.key));
+        assert_eq!(
+            parsed_json.version.unwrap().to_string(),
+            "0.1.0".to_string()
+        );
+        assert_eq!(
+            parsed_json.template,
+            format!(
+                " {{  \"a\" : 1  ,   \"version\"  :  \"{}\"  }}",
+                parsed_json.key
+            )
+        );
     }
 
     #[test]
     fn object_include_nested_version() {
         let parsed_json = parse_json(r#"{"a":1,"b":{"version":"0.1.0"}}"#).unwrap();
         assert!(parsed_json.version.is_none());
-        assert_eq!(parsed_json.template, "{\"a\":1,\"b\":{\"version\":\"0.1.0\"}}".to_string());
+        assert_eq!(
+            parsed_json.template,
+            "{\"a\":1,\"b\":{\"version\":\"0.1.0\"}}".to_string()
+        );
     }
 
     #[test]
     fn object_include_version_and_nested_version() {
-        let parsed_json = parse_json(r#"{"a":1,"version":"0.1.0","b":{"version":"0.2.0"}}"#).unwrap();
-        assert_eq!(parsed_json.version.unwrap().to_string(), "0.1.0".to_string());
-        assert_eq!(parsed_json.template, format!("{{\"a\":1,\"version\":\"{}\",\"b\":{{\"version\":\"0.2.0\"}}}}", parsed_json.key));
+        let parsed_json =
+            parse_json(r#"{"a":1,"version":"0.1.0","b":{"version":"0.2.0"}}"#).unwrap();
+        assert_eq!(
+            parsed_json.version.unwrap().to_string(),
+            "0.1.0".to_string()
+        );
+        assert_eq!(
+            parsed_json.template,
+            format!(
+                "{{\"a\":1,\"version\":\"{}\",\"b\":{{\"version\":\"0.2.0\"}}}}",
+                parsed_json.key
+            )
+        );
     }
 }
