@@ -49,7 +49,7 @@ fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .short("r")
                 .long("run")
                 .help("run after version bump (before commit)")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("file-path")
@@ -92,11 +92,11 @@ impl Version {
                 self.major += 1;
                 self.minor = 0;
                 self.patch = 0;
-            },
+            }
             Query::Minor => {
                 self.minor += 1;
                 self.patch = 0;
-            },
+            }
             Query::Patch => self.patch += 1,
             Query::Version(v) => {
                 *self = v;
@@ -139,7 +139,6 @@ fn main() {
     parsed_json.get_version_mut().bump(query);
     std::fs::write(manifest_path, parsed_json.emb_string()).unwrap();
 
-
     if matches.is_present("after-run") {
         let after_run = matches.value_of("after-run").unwrap();
         if cfg!(target_os = "windows") {
@@ -151,7 +150,8 @@ fn main() {
                 .arg("-c")
                 .arg(after_run)
                 .status()
-        }.expect("Failed to run after-run");
+        }
+        .expect("Failed to run after-run");
     }
 
     if matches.is_present("git") {
@@ -166,5 +166,9 @@ fn main() {
         .expect("Failed to commit and tag");
     }
 
-    println!("v{} -> v{}", before_version, parsed_json.get_version().to_string());
+    println!(
+        "v{} -> v{}",
+        before_version,
+        parsed_json.get_version().to_string()
+    );
 }
