@@ -80,8 +80,15 @@ impl Version {
 
     fn bump(&mut self, query: Query) {
         match query {
-            Query::Major => self.major += 1,
-            Query::Minor => self.minor += 1,
+            Query::Major => {
+                self.major += 1;
+                self.minor = 0;
+                self.patch = 0;
+            },
+            Query::Minor => {
+                self.minor += 1;
+                self.patch = 0;
+            },
             Query::Patch => self.patch += 1,
             Query::Version(v) => {
                 *self = v;
