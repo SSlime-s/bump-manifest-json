@@ -12,5 +12,6 @@ FLAGS:
   -S         signature for git commit
 
 OPTIONS:
+  -r, --run <after-run>    run command after version bump (before git commit)
   -m, --message <message>  message for git commit (default: "📚 bump version v{version}")
 ```

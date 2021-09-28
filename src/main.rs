@@ -43,6 +43,13 @@ fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .help("message for git commit")
                 .requires("git")
                 .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("after-run")
+                .short("r")
+                .long("run")
+                .help("run after version bump (before commit)")
+                .takes_value(true)
         );
     app
 }
@@ -113,6 +120,21 @@ fn main() {
 
     parsed_json.get_version_mut().bump(query);
     std::fs::write(manifest_path, parsed_json.emb_string()).unwrap();
+
+
+    if matches.is_present("after-run") {
+        let after_run = matches.value_of("after-run").unwrap();
+        if cfg!(target_os = "windows") {
+            std::process::Command::new("cmd")
+                .args(&["/C", after_run])
+                .status()
+        } else {
+            std::process::Command::new("sh")
+                .arg("-c")
+                .arg(after_run)
+                .status()
+        }.expect("Failed to run after-run");
+    }
 
     if matches.is_present("git") {
         let is_signature = matches.is_present("signature");
