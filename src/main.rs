@@ -135,6 +135,7 @@ fn main() {
         panic!("No version found in manifest.json");
     }
 
+    let before_version = parsed_json.get_version().to_string();
     parsed_json.get_version_mut().bump(query);
     std::fs::write(manifest_path, parsed_json.emb_string()).unwrap();
 
@@ -164,4 +165,6 @@ fn main() {
         )
         .expect("Failed to commit and tag");
     }
+
+    println!("v{} -> v{}", before_version, parsed_json.get_version().to_string());
 }
