@@ -50,6 +50,14 @@ fn create_app<'a, 'b>() -> App<'a, 'b> {
                 .long("run")
                 .help("run after version bump (before commit)")
                 .takes_value(true)
+        )
+        .arg(
+            Arg::with_name("file-path")
+                .short("f")
+                .long("file")
+                .help("file path to version.json")
+                .takes_value(true)
+                .default_value("manifest.json"),
         );
     app
 }
@@ -117,7 +125,9 @@ fn main() {
         x => Query::Version(Version::from_str(x).unwrap()),
     };
 
-    let manifest_path = Path::new("./manifest.json");
+    let file_path = matches.value_of("file-path").unwrap();
+
+    let manifest_path = Path::new(file_path);
     let manifest_str = std::fs::read_to_string(manifest_path).unwrap();
     let mut parsed_json = parse_json(manifest_str).expect("Failed to Parse Json");
 
