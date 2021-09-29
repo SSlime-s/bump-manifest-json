@@ -47,7 +47,7 @@ pub fn git_commit_and_tag(
     message: Option<String>,
     path: &str,
 ) -> Result<(), String> {
-    git_tag(version)?;
     git_commit(version, is_signature, message, path)?;
+    git_tag(version)?;
     Ok(())
 }
